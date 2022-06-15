@@ -1,0 +1,6 @@
+{
+    "workbench.settings.editor": "json",
+    "[javascript]": {
+        "editor.tabSize": 2
+    }
+}
