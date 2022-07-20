@@ -30,29 +30,29 @@ const storeToken = async (userPubId, token, expires, type, reqIp) => {
 
 // Generate auth token
 const generateAuthToken = async (userPubId, reqIp, store = false) => {
-  try {
-    const accessTokenExpires = moment().add(jwt.accessExpirationHours, "hours");
-    const accessToken = createToken(
-      userPubId,
-      accessTokenExpires,
-      tokenTypes.ACCESS
-    );
-    if (store) {
-      await storeToken(
-        userPubId,
+	try {
+		const accessTokenExpires = moment().add(jwt.accessExpirationHours, "hours");
+		const accessToken = createToken(
+			userPubId,
+			accessTokenExpires,
+			tokenTypes.ACCESS
+		);
+		if (store) {
+			await storeToken(
+				userPubId,
 				accessToken,
-        accessTokenExpires,
-        tokenTypes.ACCESS,
-        reqIp
-      );
-    }
-    return {
-      token: accessToken,
-      expires: accessTokenExpires.toDate(),
-    };
-  } catch (error) {
+				accessTokenExpires,
+				tokenTypes.ACCESS,
+				reqIp
+			);
+		}
+		return {
+			token: accessToken,
+			expires: accessTokenExpires.toDate(),
+		};
+	} catch (error) {
 		throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
-  }
+	}
 };
 
 // function to extract tokex from req authorization header
@@ -70,28 +70,39 @@ const extractToken = (req) => {
 // Verify token and return token (or throw an error if it is not valid)
 const verifyToken = async (token) => {
 	const { sub, type, exp } = jsonWebToken.verify(token, jwt.secret);
-	console.log('token expiry:', exp);
-	const validToken = await TokenModel.findOne({
-		where: { token, type, user: sub, black_listed: false },
-	});
-	if (!validToken) {
-		throw new Error("Token not found");
-	}
-	return validToken;
+	// const validToken = await TokenModel.findOne({
+	// 	where: { token, type, user: sub, black_listed: false },
+	// });
+	// if (!validToken) {
+	// 	throw new ApiError(httpStatus.UNAUTHORIZED, "Token not found");
+	// }
+	// return validToken;
+	return sub;
 };
 
 // function to verify session/access token
 const authVerify = async (req, res, next) => {
+	let token;
 	try {
-		const token = extractToken(req);
+		token = extractToken(req);
 		if (!token) {
 			throw new Error("Invalid authorization token");
 		}
 		const isValidToken = await verifyToken(token);
-		res.locals.user = isValidToken.user;
+		// res.locals.user = isValidToken.user;
+		res.locals.user = isValidToken;
 		next();
 	} catch (error) {
-		throw new ApiError(httpStatus.FORBIDDEN, error.message);
+		if ("TokenExpiredError" === error.name) {
+			TokenModel.findOne({
+				where: { token, black_listed: false },
+			}).then((_token) => {
+				_token?.update({ black_listed: true });
+			});
+			error.message = "Session token expired";
+		}
+		error.statusCode = httpStatus.UNAUTHORIZED;
+		next(error);
 	}
 };
 

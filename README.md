@@ -9,3 +9,9 @@ login [post] "/auth/login"
 signup [post] "/auth/signup"
 logout [post] "/auth/logout"
 
+# goals path
+get user's goals [get] "/goals/fetch"
+create goal [post] "/goals/create"
+
+# user path
+add user's card [put] "/user/card"
