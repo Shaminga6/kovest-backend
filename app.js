@@ -38,7 +38,7 @@ app.use(compression());
 // enable cors
 const corsOption = {
 	methods: ["GET", "POST", "PUT", "DELETE"],
-	origin: config.validCors.split(","),
+	origin: config.validCors,
 	optionSuccessStatus: 200,
 	headers: ["Content-Type", "Authorization", "x-access-token"],
 	// credentials: true,
