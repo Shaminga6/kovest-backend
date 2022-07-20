@@ -2,10 +2,8 @@ const UserModel = require("../models/user.model");
 const { generateAuthToken } = require("../config/jwt");
 const httpStatus = require("http-status");
 const ApiError = require("../utils/ApiError");
-const { objSelective, stringHashMatch } = require("../utils/helpers");
+const { objSelective, stringHashMatch, dataValuesToExempt } = require("../utils/helpers");
 const TokenModel = require("../models/token.model");
-
-const dataValuesToExempt = ["id", "password", "black_listed", "role"];
 
 // login controller
 const login = async (req, res, next) => {
@@ -25,7 +23,7 @@ const login = async (req, res, next) => {
 				"Your account has been suspended"
 			);
 		}
-		const genToken = await generateAuthToken(validUser.pub_id, reqIp, true);
+		const genToken = await generateAuthToken(validUser.user_id, reqIp, true);
 		validUser = objSelective(validUser.dataValues, dataValuesToExempt);
 		res
 			.status(httpStatus.CREATED)
@@ -55,7 +53,7 @@ const signUp = async (req, res, next) => {
 			gender: gender?.toString().toLowerCase(),
 			dob,
 		});
-		const genToken = await generateAuthToken(newUser.pub_id, reqIp, true);
+		const genToken = await generateAuthToken(newUser.user_id, reqIp, true);
 		newUser = objSelective(newUser.dataValues, dataValuesToExempt);
 		res
 			.status(httpStatus.CREATED)
@@ -69,12 +67,14 @@ const signUp = async (req, res, next) => {
 const logout = async (req, res, next) => {
 	try {
 		const { token = null } = req.body;
-		const validToken = await TokenModel.findOne({ where: { token, black_listed: false } });
+		const validToken = await TokenModel.findOne({
+			where: { token, black_listed: false },
+		});
 		if (!validToken) {
 			throw new ApiError(httpStatus.NOT_FOUND, "Token not found");
 		}
 		await validToken.update({ black_listed: true });
-		res.status(httpStatus.OK).send('Session logged out');
+		res.status(httpStatus.OK).send("Session logged out");
 	} catch (error) {
 		next(error);
 	}

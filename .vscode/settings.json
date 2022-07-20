@@ -2,5 +2,6 @@
     "workbench.settings.editor": "json",
     "[javascript]": {
         "editor.tabSize": 2
-    }
+    },
+    "files.autoSave": "afterDelay"
 }

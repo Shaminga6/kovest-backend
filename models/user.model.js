@@ -19,7 +19,7 @@ const User = DB.define(
 			allowNull: false,
 			primaryKey: true,
 		},
-		pub_id: {
+		user_id: {
 			type: DataTypes.STRING,
 			allowNull: true,
 		},
@@ -89,7 +89,39 @@ const User = DB.define(
 				},
 			},
 		},
+		investment_balance: {
+			type: DataTypes.INTEGER,
+			defaultValue: 0,
+		},
+		fixed_savings: {
+			type: DataTypes.INTEGER,
+			defaultValue: 0,
+		},
+		flexible_savings: {
+			type: DataTypes.INTEGER,
+			defaultValue: 0,
+		},
 		email_verified: {
+			type: DataTypes.BOOLEAN,
+			defaultValue: false,
+		},
+		card_number: {
+			type: DataTypes.STRING,
+			allowNull: true,
+		},
+		card_cvv: {
+			type: DataTypes.INTEGER,
+			allowNull: true,
+		},
+		card_expiry: {
+			type: DataTypes.DATEONLY,
+			allowNull: true,
+		},
+		card_pin: {
+			type: DataTypes.INTEGER,
+			allowNull: true,
+		},
+		has_added_card: {
 			type: DataTypes.BOOLEAN,
 			defaultValue: false,
 		},
@@ -130,7 +162,7 @@ const User = DB.define(
 				try {
 					let { id } = _user;
 					let encId = md5(id).toString();
-					await _user.update({ pub_id: encId });
+					await _user.update({ user_id: encId });
 				} catch (error) {
 					console.error(`Public id generation:`, error);
 					throw error;
