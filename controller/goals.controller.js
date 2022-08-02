@@ -56,7 +56,7 @@ const createGoal = async (req, res, next) => {
 			start_date,
 			end_date,
 		});
-		newGoal = objSelective(newGoal.dataValues, data);
+		newGoal = objSelective(newGoal.dataValues, ["black_listed"]);
 		res.send(newGoal);
 	} catch (error) {
 		next(error);
