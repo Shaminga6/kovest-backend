@@ -44,6 +44,7 @@ const addCard = async (req, res, next) => {
 				"Error occurred adding card"
 			);
 		}
+		
 		validUser = objSelective(validUser.dataValues, dataValuesToExempt);
 		res.send(validUser);
 	} catch (error) {

@@ -6,12 +6,14 @@
 const DB = require('./database');
 const app = require('./app');
 const config = require('./config/config');
+const runTransaction = require('./services/goal.service');
 
 // verify db connection and start server
 let server;
 DB.authenticate().then(() => {
   console.info(`Connected to ${config.db.dialect} database.`);
   server = app.listen(config.port, () => {
+    runTransaction("weekly")
     console.info(`Listening to port ${config.port}`);
   });
 });
