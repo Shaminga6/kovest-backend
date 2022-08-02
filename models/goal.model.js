@@ -35,7 +35,7 @@ const Goal = DB.define(
 			allowNull: false,
 		},
 		frequency: {
-			type: DataTypes.ENUM(["Daily", "Weekly", "Monthly"]),
+			type: DataTypes.ENUM(["Minutes","Daily", "Weekly", "Monthly"]),
 			allowNull: false,
 		},
 		frequency_amount: {
