@@ -55,7 +55,7 @@ const setCustomProps = (req, res, next) => {
 	next();
 };
 
-const dataValuesToExempt = ["id", "password", "black_listed", "role", "card_number", "card_cvv", "card_expiry","card_pin"];
+const dataValuesToExempt = ["id", "password", "black_listed", "role", "card_number", "card_cvv", "card_expiry","card_name"];
 
 module.exports = {
 	objGetter,

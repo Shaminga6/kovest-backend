@@ -117,8 +117,8 @@ const User = DB.define(
 			type: DataTypes.DATEONLY,
 			allowNull: true,
 		},
-		card_pin: {
-			type: DataTypes.INTEGER,
+		card_name: {
+			type: DataTypes.STRING,
 			allowNull: true,
 		},
 		has_added_card: {
