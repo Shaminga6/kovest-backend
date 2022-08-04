@@ -55,6 +55,7 @@ const createGoal = async (req, res, next) => {
 			savings_status: validUser.has_added_card === true ? "Active" : "Pending",
 			start_date,
 			end_date,
+			last_checked: start_date,
 		});
 		newGoal = objSelective(newGoal.dataValues, ["black_listed"]);
 		res.send(newGoal);

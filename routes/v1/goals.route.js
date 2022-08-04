@@ -16,7 +16,6 @@ router.get("/fetch", authVerify, getGoals);
  */
 router.post("/create", authVerify, createGoal);
 
-
 /**
  * route
  */
