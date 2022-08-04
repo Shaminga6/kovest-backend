@@ -9,6 +9,7 @@ login [post] "/auth/login"
 signup [post] "/auth/signup"
 logout [post] "/auth/logout"
 
+<!-- Needs Authorization Token -->
 # goals path
 get user's goals [get] "/goals/fetch"
 create goal [post] "/goals/create"
