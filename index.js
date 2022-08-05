@@ -7,6 +7,7 @@ const DB = require('./database');
 const app = require('./app');
 const config = require('./config/config');
 const runTransaction = require('./services/goal.service');
+const cronJob = require('cron').CronJob
 
 // verify db connection and start server
 let server;
