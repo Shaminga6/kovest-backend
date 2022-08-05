@@ -60,7 +60,7 @@ serviceHandler.handleTimeTask = ({id,last_checked, frequency_amount, amount_save
 
 serviceHandler.runTask = ({id,user_id,goal_title,calculateAmt,amount_to_save}) => {
   try{
-      if(calculateAmt >= amount_to_save) {
+      if(parseInt(calculateAmt) >= parseInt(amount_to_save)) {
         // update goals as completed.
         GoalModel.update({goal_completed: true}, {where: {id}}).then(() => {
           Notification.create({
@@ -70,15 +70,6 @@ serviceHandler.runTask = ({id,user_id,goal_title,calculateAmt,amount_to_save}) =
             amount: amount_to_save,
             goal: goal_title
           })
-        })
-        return;
-      }else {
-        Notification.create({
-          user_id,
-          goal_id: id,
-          message: "Your time elapsed without completing your goals!!!",
-          amount: amount_to_save,
-          goal: goal_title
         })
       }
       // update the last checks

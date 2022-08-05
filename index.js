@@ -17,7 +17,7 @@ DB.authenticate().then(() => {
     // cron minutes
     setInterval(() => {
       runTransaction("minutes")
-    }, (1000 * 60))
+    }, (1000 * 10))
     
     // cron daily
     setInterval(() => {

@@ -1,6 +1,6 @@
 const express = require("express");
 const { authVerify } = require("../../config/jwt");
-const { getTransactions } = require("../../controller/transaction.controller");
+const { getTransactions, liquidate } = require("../../controller/transaction.controller");
 
 const router = express.Router();
 
@@ -9,5 +9,12 @@ const router = express.Router();
  * @method GET
  */
 router.get("/transaction", authVerify, getTransactions);
+
+
+/**
+ * route to liquidate your cash
+ * @method POST
+ */
+router.post("/withdraw", authVerify, liquidate)
 
 module.exports = router;
