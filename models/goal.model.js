@@ -5,9 +5,11 @@
 const { DataTypes } = require("sequelize");
 const DB = require("../database");
 
+
 /**
  * @typedef Token
  */
+
 const Goal = DB.define(
 	"goals",
 	{
@@ -35,7 +37,7 @@ const Goal = DB.define(
 			allowNull: false,
 		},
 		frequency: {
-			type: DataTypes.ENUM(["Daily", "Weekly", "Monthly"]),
+			type: DataTypes.ENUM(["Minutes","Daily", "Weekly", "Monthly"]),
 			allowNull: false,
 		},
 		frequency_amount: {
@@ -68,6 +70,14 @@ const Goal = DB.define(
 			defaultValue: false,
 		},
 		black_listed: {
+			type: DataTypes.BOOLEAN,
+			defaultValue: false,
+		},
+		last_checked: {
+			type: DataTypes.DATE,
+			allowNull: false			
+		},
+		goal_completed: {
 			type: DataTypes.BOOLEAN,
 			defaultValue: false,
 		},

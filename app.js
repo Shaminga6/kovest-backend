@@ -51,7 +51,7 @@ app.options("*", cors(corsOption));
 // set ip
 app.use(setCustomProps);
 
-// limit number of request pper timing to api route
+// limit number of request per timing to api route
 if (config.env === "production") {
 	app.use("/v1", rateLimiter);
 }
