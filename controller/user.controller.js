@@ -3,6 +3,7 @@ const UserModel = require("../models/user.model");
 const GoalModel = require("../models/goal.model");
 const ApiError = require("../utils/ApiError");
 const { objSelective, dataValuesToExempt } = require("../utils/helpers");
+const moment = require("moment");
 
 const addCard = async (req, res, next) => {
 	try {
@@ -31,8 +32,9 @@ const addCard = async (req, res, next) => {
 				"Your account has been suspended"
 			);
 		}
+		
 		if (
-			!(await validUser.update({
+			(await validUser.update({
 				card_number,
 				card_cvv,
 				card_expiry,
@@ -46,7 +48,7 @@ const addCard = async (req, res, next) => {
 				},
 				{
 					where: {
-						user_id: validUser.pub_id,
+						user_id: validUser.user_id,
 						savings_status: "Pending",
 					},
 				}

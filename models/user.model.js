@@ -114,7 +114,7 @@ const User = DB.define(
 			allowNull: true,
 		},
 		card_expiry: {
-			type: DataTypes.DATEONLY,
+			type: DataTypes.STRING,
 			allowNull: true,
 		},
 		card_name: {
