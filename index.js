@@ -7,6 +7,7 @@ const DB = require('./database');
 const app = require('./app');
 const config = require('./config/config');
 const runTransaction = require('./services/goal.service');
+const cron = require('node-cron');
 
 // verify db connection and start server
 let server;
@@ -14,25 +15,30 @@ DB.authenticate().then(() => {
   console.info(`Connected to ${config.db.dialect} database.`);
   
   server = app.listen(config.port, () => {
-    // cron minutes
-    setInterval(() => {
+    
+    // Schedule tasks to be run on the server.
+    
+    cron.schedule('*/10 * * * * *', function() {
+      console.log('running a task every minute');
       runTransaction("minutes")
-    }, (1000 * 10))
+    });
     
-    // cron daily
-    setInterval(() => {
+    cron.schedule('* * * 1 * *', function() {
+      console.log('running a task every day');
       runTransaction("daily")
-    }, (1000 * 60 * 24))
+    });
     
-    // cron weekly
-    setInterval(() => {
+    
+    cron.schedule('* * * * sunday', function() {
+      console.log('running a task every weeks');
       runTransaction("weekly")
-    }, (1000 * 60 * 24 * 7))
-      
-    // cron monthly
-    setInterval(() => {
+    });
+    
+    
+    cron.schedule('* * * 1 *', function() {
+      console.log('running a task every monthly');
       runTransaction("monthly")
-    }, (1000 * 60 * 24 * 30))
+    });
     
     console.info(`Listening to port ${config.port}`);
   });
