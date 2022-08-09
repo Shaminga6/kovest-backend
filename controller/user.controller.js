@@ -3,7 +3,6 @@ const UserModel = require("../models/user.model");
 const GoalModel = require("../models/goal.model");
 const ApiError = require("../utils/ApiError");
 const { objSelective, dataValuesToExempt } = require("../utils/helpers");
-const moment = require("moment");
 
 const addCard = async (req, res, next) => {
 	try {
@@ -67,6 +66,34 @@ const addCard = async (req, res, next) => {
 	}
 };
 
+const getUser = async (req, res, next) => {
+	try {
+		const user = res.locals.user;
+		
+		let validUser = await UserModel.findOne({
+			where: { user_id: user },
+		});
+		
+		if (!validUser) {
+			throw new ApiError(httpStatus.UNAUTHORIZED, "User not found");
+		}
+		
+		if (validUser.black_listed !== false) {
+			throw new ApiError(
+				httpStatus.FORBIDDEN,
+				"Your account has been suspended"
+			);
+		}
+		
+		
+		validUser = objSelective(validUser.dataValues, dataValuesToExempt);
+		res.send(validUser);
+	} catch (error) {
+		next(error);
+	}
+};
+
 module.exports = {
 	addCard,
+	getUser
 };

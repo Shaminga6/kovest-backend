@@ -16,6 +16,7 @@ create goal [post] "/goals/create"
 
 # user path
 add user's card [put] "/user/card"
+get all user [get] "/auth/me"
 
 
 # transaction path
