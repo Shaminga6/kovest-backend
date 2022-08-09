@@ -74,7 +74,7 @@ const liquidate = async (req, res, next) => {
       
       const ifGoalElapsed = moment(moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]")).isAfter(aGoal.end_date);
       
-      if(aGoal.amount_saved <= aGoal.amount_to_save && aGoal.type_of_savings === "fixed" && !ifGoalElapsed) {
+      if(aGoal.amount_saved <= aGoal.amount_to_save && aGoal.type_of_savings.toLowerCase() === "fixed" && !ifGoalElapsed) {
           // Cron must complete goal on fixed savings
           throw new ApiError(
             httpStatus.UNAUTHORIZED,
@@ -82,11 +82,14 @@ const liquidate = async (req, res, next) => {
           );
       }else {
         // Liquidate fixed goals here
-        widthraw(aGoal.user_id, aGoal.id, aGoal.goal_title,aGoal.amount_to_save,aGoal.amount_saved)
+        UserModel.update({fixed_savings: 0}, {where: {user_id: aGoal.user_id}}).then(() => {})
+        withdraw(aGoal.user_id, aGoal.id, aGoal.goal_title,aGoal.amount_to_save,aGoal.amount_saved)
       }
       
-      if(aGoal.type_of_savings === "flexible") {
-        widthraw(aGoal.user_id, aGoal.id, aGoal.goal_title,aGoal.amount_to_save,aGoal.amount_saved)
+      if(aGoal.type_of_savings.toLowerCase() === "flexible") {
+        // When we withdraw, kovest wants to keep track of current balance on the dashboard.
+        UserModel.update({flexible_savings:  0}, {where: {user_id: aGoal.user_id}}).then(() => {})
+        withdraw(aGoal.user_id, aGoal.id, aGoal.goal_title,aGoal.amount_to_save,aGoal.amount_saved)
       }
       
       res.status(httpStatus.OK).send("widthrawal completed")
@@ -109,7 +112,7 @@ const liquidate = async (req, res, next) => {
  * @param {Number} amount_to_save 
  * @param {Number} remainingAmount 
  */
-const widthraw = (user_id,id,goal_title,amount_to_save,remainingAmount) => {
+const withdraw = (user_id,id,goal_title,amount_to_save,remainingAmount) => {
   // update the last checks
   GoalModel.update({is_liquidated: true, goal_completed: true}, {where: {id}}).then(() => {
   

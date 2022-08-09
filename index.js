@@ -19,7 +19,7 @@ DB.authenticate().then(() => {
     // Schedule tasks to be run on the server.
     
     cron.schedule('*/10 * * * * *', function() {
-      console.log('running a task every minute');
+      console.log('running a task every seconds');
       runTransaction("minutes")
     });
     

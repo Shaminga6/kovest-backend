@@ -151,8 +151,10 @@ const User = DB.define(
 			afterValidate: async (accountInstance) => {
 				try {
 					let { password } = accountInstance;
-					let salt = await bcryptJs.genSalt(12);
-					accountInstance.password = await bcryptJs.hash(password, salt);
+					if(accountInstance.password) {
+						let salt = await bcryptJs.genSalt(12);
+						accountInstance.password = await bcryptJs.hash(password, salt);
+					}
 				} catch (error) {
 					console.error(`Password Hash: `, error);
 					throw error;
