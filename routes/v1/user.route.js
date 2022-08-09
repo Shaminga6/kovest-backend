@@ -14,6 +14,6 @@ router.put("/card", authVerify, addCard);
  * route to fetch user
  * @method GET
  */
- router.get("/me", authVerify, getUser);
+router.get("/me", authVerify, getUser);
 
 module.exports = router;
