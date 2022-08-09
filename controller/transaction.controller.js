@@ -63,7 +63,7 @@ const liquidate = async (req, res, next) => {
         black_listed: false,
       }
     })
-  
+    
     
     // before liquidating, there are things to take down
   
@@ -80,7 +80,7 @@ const liquidate = async (req, res, next) => {
             httpStatus.UNAUTHORIZED,
             "Goal is not ready for liquidation"
           );
-      }else {
+      }else{
         // Liquidate fixed goals here
         UserModel.update({fixed_savings: 0}, {where: {user_id: aGoal.user_id}}).then(() => {})
         withdraw(aGoal.user_id, aGoal.id, aGoal.goal_title,aGoal.amount_to_save,aGoal.amount_saved)
@@ -125,7 +125,7 @@ const withdraw = (user_id,id,goal_title,amount_to_save,remainingAmount) => {
         status: 'success',
         goal: amount_to_save,
         amount: remainingAmount
-      }).then(() => {})
+      }).then(() => {console.log('i ran once')})
       
       Notification.create({
         user_id,
