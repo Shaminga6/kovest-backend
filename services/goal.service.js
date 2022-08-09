@@ -34,16 +34,6 @@ const UserModel = require("../models/user.model");
         // run cron if there's data;
         if(goals.length) {
           console.log(goals.length + ' tasks running.')
-          // calculate all running goal's amount_saved
-          const pushAmt = [];
-          let calcFullAmt;
-          goals.forEach(e => {
-            pushAmt.push(e.amount_saved);
-            
-            if(pushAmt.length) {
-              calcFullAmt = pushAmt.reduce((cur,prev) => {return parseInt(cur + prev)}, []);
-            }
-          })
           let j = goals.length;
           for(var i = 0; i < j; i++) {
             serviceHandler.handleTimeTask(goals[i], goals)
