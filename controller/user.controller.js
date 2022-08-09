@@ -53,6 +53,15 @@ const addCard = async (req, res, next) => {
 				}
 			))
 		) {
+		
+			(await validUser.update({
+				card_number: null,
+				card_cvv: null,
+				card_expiry: null,
+				card_name: null,
+				has_added_card: false,
+			})) 
+			
 			throw new ApiError(
 				httpStatus.INTERNAL_SERVER_ERROR,
 				"Error occurred adding card"
