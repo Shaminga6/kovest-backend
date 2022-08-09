@@ -4,61 +4,62 @@ const { Op } = require("sequelize");
 const GoalModel = require("../models/goal.model");
 const Notification = require("../models/notification.model");
 const TransactionModel = require("../models/transaction.model");
-
-
-const today = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]"); // gives a better date format.
-
-const runTransaction = (frequency) => {
-  _(frequency)
-}
-
-const _ = async(frequency) => {
-  try {
-    const goals = await GoalModel.findAll({
-      where: {
-        frequency,
-        savings_status: 'Active',
-        is_liquidated: false,
-        black_listed: false,
-        start_date: {
-          [Op.lte]:  moment().format("YYYY-MM-DDTHH:mm:ss[Z]")
-        },
-        end_date: {
-          [Op.gte]: moment().format("YYYY-MM-DDTHH:mm:ss[Z]")
-        },
-        goal_completed: false
-      }
-    })
-    // run cron if there's data;
-    if(goals.length) {
-      console.log(goals.length + ' tasks running.')
-      let j = goals.length;
-      for(var i = 0; i < j; i++) {
-        serviceHandler.handleTimeTask(goals[i])
-      }
+const UserModel = require("../models/user.model");
+    
+    
+    const today = moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]"); // gives a better date format.
+    
+    const runTransaction = (frequency) => {
+      _(frequency)
     }
-  } catch (error) {
-    console.log(error);
-  }
-
-}
-
-module.exports = runTransaction;
-
-
-var serviceHandler = {};
-
-serviceHandler.handleTimeTask = ({id,last_checked, frequency_amount, amount_saved,amount_to_save,goal_title, user_id}) => {
-    // check time remaining before task starts 
+    
+    const _ = async(frequency) => {
+      try {
+        const goals = await GoalModel.findAll({
+          where: {
+            frequency,
+            savings_status: 'Active',
+            is_liquidated: false,
+            black_listed: false,
+            start_date: {
+              [Op.lte]:  moment().format("YYYY-MM-DDTHH:mm:ss[Z]")
+            },
+            end_date: {
+              [Op.gte]: moment().format("YYYY-MM-DDTHH:mm:ss[Z]")
+            },
+            goal_completed: false
+          }
+        })
+        // run cron if there's data;
+        if(goals.length) {
+          console.log(goals.length + ' tasks running.')
+          let j = goals.length;
+          for(var i = 0; i < j; i++) {
+            serviceHandler.handleTimeTask(goals[i])
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    
+    }
+    
+    module.exports = runTransaction;
+    
+    
+    var serviceHandler = {};
+    
+    serviceHandler.handleTimeTask = ({id,last_checked, frequency_amount, amount_saved,amount_to_save,goal_title, user_id, type_of_savings}) => {
+        // check time remaining before task starts 
     const timeRemaining = moment(moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]")).isAfter(last_checked);
     
     if(timeRemaining) {
       // handle update
-      serviceHandler.runTask({id,user_id,goal_title,amount_to_save,calculateAmt: (parseInt(frequency_amount) + parseInt(amount_saved))})
+      serviceHandler.runTask({id,user_id,goal_title,amount_to_save,calculateAmt: (parseInt(frequency_amount) + parseInt(amount_saved)),type_of_savings })
     }
 }
 
-serviceHandler.runTask = ({id,user_id,goal_title,calculateAmt,amount_to_save}) => {
+serviceHandler.runTask = ({id,user_id,goal_title,calculateAmt,amount_to_save,type_of_savings}) => {
   try{
       if(parseInt(calculateAmt) >= parseInt(amount_to_save)) {
         // update goals as completed.
@@ -74,6 +75,14 @@ serviceHandler.runTask = ({id,user_id,goal_title,calculateAmt,amount_to_save}) =
       }
       // update the last checks
       GoalModel.update({last_checked: today, amount_saved: calculateAmt}, {where: {id}}).then(() => {})
+      
+      // We should update users personal account on kovest dashboard ::- we'll be adding to the table
+      if(type_of_savings.toLowerCase() === "flexible") {
+        UserModel.update({flexible_savings: calculateAmt}, {where: {user_id}}).then(() => {})
+      }else if(type_of_savings.toLowerCase() === "fixed") {
+        UserModel.update({fixed_savings: calculateAmt}, {where: {user_id}}).then(() => {})
+      }
+
       // save transaction
       TransactionModel.create({
         user_id,
