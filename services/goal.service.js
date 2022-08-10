@@ -56,11 +56,11 @@ const UserModel = require("../models/user.model");
     
     if(timeRemaining) {
       // handle update
-      serviceHandler.runTask({id,user_id,goal_title,amount_to_save,calculateAmt: (parseInt(frequency_amount) + parseInt(amount_saved)),type_of_savings }, goals)
+      serviceHandler.runTask({id,user_id,goal_title,amount_to_save,frequency_amount,calculateAmt: (parseInt(frequency_amount) + parseInt(amount_saved)),type_of_savings }, goals)
     }
 }
 
-serviceHandler.runTask = ({id,user_id,goal_title,calculateAmt,amount_to_save,type_of_savings}, goals) => {
+serviceHandler.runTask = async({id,user_id,goal_title,frequency_amount,calculateAmt,amount_to_save,type_of_savings}, goals) => {
   try{
       if(parseInt(calculateAmt) >= parseInt(amount_to_save)) {
         // update goals as completed.
@@ -77,13 +77,6 @@ serviceHandler.runTask = ({id,user_id,goal_title,calculateAmt,amount_to_save,typ
       // update the last checks
       GoalModel.update({last_checked: today, amount_saved: calculateAmt}, {where: {id}}).then(() => {})
       
-      // We should update users personal account on kovest dashboard ::- we'll be adding to the table
-      if(type_of_savings.toLowerCase() === "flexible") {
-        UserModel.update({flexible_savings: calculateAmt_(goals)}, {where: {user_id}}).then(() => {})
-      }else if(type_of_savings.toLowerCase() === "fixed") {
-        UserModel.update({fixed_savings: calculateAmt_(goals)}, {where: {user_id}}).then(() => {})
-      }
-
       // save transaction
       TransactionModel.create({
         user_id,
@@ -94,20 +87,35 @@ serviceHandler.runTask = ({id,user_id,goal_title,calculateAmt,amount_to_save,typ
         goal: amount_to_save,
         amount: calculateAmt
       }).then(() => {})
+      
+      // We should update users personal account on kovest dashboard ::- we'll be adding to the table
+      const getUserModel = async() => {
+        try{
+          return await UserModel.findOne({where: {user_id}})
+        }catch(e) {
+          throw e
+        }
+      }
+      
+      if(await getUserModel()) {
+        const getSaving = await getUserModel()
+        if(type_of_savings.toLowerCase() === "flexible") {
+          UserModel.update({flexible_savings: (getSaving.flexible_savings + calculateAmt_(goals.filter(e => e.type_of_savings.toLowerCase() === "flexible")))}, {where: {user_id}}).then(() => {})
+        }else if(type_of_savings.toLowerCase() === "fixed") {
+          UserModel.update({fixed_savings: (getSaving.fixed_savings + calculateAmt_(goals.filter(e => e.type_of_savings.toLowerCase() === "fixed")))}, {where: {user_id}}).then(() => {})
+        }
+      }
   } catch (error) {
     throw error
   }
 }
 
+let arrSavings = [];
 function calculateAmt_(goals) {
-  const pushAmt = [];
-  let calcFullAmt;
-  goals.forEach(e => {
-    pushAmt.push(e.amount_saved);
-    
-    if(pushAmt.length) {
-      calcFullAmt = pushAmt.reduce((cur,prev) => {return parseInt(cur + prev)}, []);
-    }
-  })
-  return calcFullAmt
+  goals.forEach(goal => arrSavings.push(goal.frequency_amount))
+  
+  const calc = arrSavings.reduce((cur,prev) => parseInt(cur+prev),0);
+  
+  arrSavings.splice(0)
+  return calc;
 }
