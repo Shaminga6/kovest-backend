@@ -30,12 +30,13 @@ const UserModel = require("../models/user.model");
             goal_completed: false
           }
         })
+        
         // run cron if there's data;
         if(goals.length) {
           console.log(goals.length + ' tasks running.')
           let j = goals.length;
           for(var i = 0; i < j; i++) {
-            serviceHandler.handleTimeTask(goals[i])
+            serviceHandler.handleTimeTask(goals[i], goals)
           }
         }
       } catch (error) {
@@ -49,17 +50,17 @@ const UserModel = require("../models/user.model");
     
     var serviceHandler = {};
     
-    serviceHandler.handleTimeTask = ({id,last_checked, frequency_amount, amount_saved,amount_to_save,goal_title, user_id, type_of_savings}) => {
+    serviceHandler.handleTimeTask = ({id,last_checked, frequency_amount, amount_saved,amount_to_save,goal_title, user_id, type_of_savings}, goals) => {
         // check time remaining before task starts 
     const timeRemaining = moment(moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]")).isAfter(last_checked);
     
     if(timeRemaining) {
       // handle update
-      serviceHandler.runTask({id,user_id,goal_title,amount_to_save,calculateAmt: (parseInt(frequency_amount) + parseInt(amount_saved)),type_of_savings })
+      serviceHandler.runTask({id,user_id,goal_title,amount_to_save,calculateAmt: (parseInt(frequency_amount) + parseInt(amount_saved)),type_of_savings }, goals)
     }
 }
 
-serviceHandler.runTask = ({id,user_id,goal_title,calculateAmt,amount_to_save,type_of_savings}) => {
+serviceHandler.runTask = ({id,user_id,goal_title,calculateAmt,amount_to_save,type_of_savings}, goals) => {
   try{
       if(parseInt(calculateAmt) >= parseInt(amount_to_save)) {
         // update goals as completed.
@@ -78,9 +79,9 @@ serviceHandler.runTask = ({id,user_id,goal_title,calculateAmt,amount_to_save,typ
       
       // We should update users personal account on kovest dashboard ::- we'll be adding to the table
       if(type_of_savings.toLowerCase() === "flexible") {
-        UserModel.update({flexible_savings: calculateAmt}, {where: {user_id}}).then(() => {})
+        UserModel.update({flexible_savings: calculateAmt_(goals)}, {where: {user_id}}).then(() => {})
       }else if(type_of_savings.toLowerCase() === "fixed") {
-        UserModel.update({fixed_savings: calculateAmt}, {where: {user_id}}).then(() => {})
+        UserModel.update({fixed_savings: calculateAmt_(goals)}, {where: {user_id}}).then(() => {})
       }
 
       // save transaction
@@ -96,4 +97,17 @@ serviceHandler.runTask = ({id,user_id,goal_title,calculateAmt,amount_to_save,typ
   } catch (error) {
     throw error
   }
+}
+
+function calculateAmt_(goals) {
+  const pushAmt = [];
+  let calcFullAmt;
+  goals.forEach(e => {
+    pushAmt.push(e.amount_saved);
+    
+    if(pushAmt.length) {
+      calcFullAmt = pushAmt.reduce((cur,prev) => {return parseInt(cur + prev)}, []);
+    }
+  })
+  return calcFullAmt
 }

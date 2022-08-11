@@ -73,14 +73,16 @@ const liquidate = async (req, res, next) => {
       const aGoal = goals[0];
       
       const ifGoalElapsed = moment(moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]")).isAfter(aGoal.end_date);
+      const ifThis = aGoal.amount_saved <= aGoal.amount_to_save && aGoal.type_of_savings.toLowerCase() === "fixed" && !ifGoalElapsed;
+      const elseIfThis = aGoal.amount_saved >= aGoal.amount_to_save && aGoal.type_of_savings.toLowerCase() === "fixed" && ifGoalElapsed;
       
-      if(aGoal.amount_saved <= aGoal.amount_to_save && aGoal.type_of_savings.toLowerCase() === "fixed" && !ifGoalElapsed) {
+      if(ifThis) {
           // Cron must complete goal on fixed savings
           throw new ApiError(
             httpStatus.UNAUTHORIZED,
             "Goal is not ready for liquidation"
           );
-      }else{
+      }else if(elseIfThis){
         // Liquidate fixed goals here
         UserModel.update({fixed_savings: 0}, {where: {user_id: aGoal.user_id}}).then(() => {})
         withdraw(aGoal.user_id, aGoal.id, aGoal.goal_title,aGoal.amount_to_save,aGoal.amount_saved)
