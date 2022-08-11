@@ -82,15 +82,15 @@ const liquidate = async (req, res, next) => {
             httpStatus.UNAUTHORIZED,
             "Goal is not ready for liquidation"
           );
-      }else if(elseIfThis){
+      }else if(elseIfThis && validUser.fixed_savings > 0){
         // Liquidate fixed goals here
-        UserModel.update({fixed_savings: 0}, {where: {user_id: aGoal.user_id}}).then(() => {})
+        UserModel.update({fixed_savings: parseInt(validUser.fixed_savings - aGoal.amount_saved)}, {where: {user_id: aGoal.user_id}}).then(() => {})
         withdraw(aGoal.user_id, aGoal.id, aGoal.goal_title,aGoal.amount_to_save,aGoal.amount_saved)
       }
       
-      if(aGoal.type_of_savings.toLowerCase() === "flexible") {
+      if(aGoal.type_of_savings.toLowerCase() === "flexible" && validUser.fixed_savings > 0) { // we don't want to check an empty account
         // When we withdraw, kovest wants to keep track of current balance on the dashboard.
-        UserModel.update({flexible_savings:  0}, {where: {user_id: aGoal.user_id}}).then(() => {})
+        UserModel.update({flexible_savings:  parseInt(validUser.flexible_savings - aGoal.amount_saved)}, {where: {user_id: aGoal.user_id}}).then(() => {})
         withdraw(aGoal.user_id, aGoal.id, aGoal.goal_title,aGoal.amount_to_save,aGoal.amount_saved)
       }
       
