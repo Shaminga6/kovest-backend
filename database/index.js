@@ -18,3 +18,6 @@ const Database = new Sequelize(database, user, password, {
 });
 
 module.exports = Database;
+
+
+//b7dbbe90f7f52a:e0906b7d@us-cdbr-east-06.cleardb.net/heroku_0afa7960fe97bf3?

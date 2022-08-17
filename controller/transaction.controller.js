@@ -34,11 +34,11 @@ const liquidate = async (req, res, next) => {
         goal_id  = null,
         password = null,
     } = req.body
-    
+
     const validUser = await UserModel.findOne({
 			where: { user_id: user },
 		});
-		
+
 		if (!validUser || !(await stringHashMatch(password, validUser.password))) {
 			throw new ApiError(
 				httpStatus.UNAUTHORIZED,
@@ -66,7 +66,6 @@ const liquidate = async (req, res, next) => {
     
     
     // before liquidating, there are things to take down
-  
     // ::if there is a goal to liquidate
     if(goals.length) {
       // ::Get amount saved already, since a user can liquidate any time on flexible
@@ -75,7 +74,7 @@ const liquidate = async (req, res, next) => {
       const ifGoalElapsed = moment(moment().format("YYYY-MM-DDTHH:mm:ss.000[Z]")).isAfter(aGoal.end_date);
       const ifThis = aGoal.amount_saved <= aGoal.amount_to_save && aGoal.type_of_savings.toLowerCase() === "fixed" && !ifGoalElapsed;
       const elseIfThis = aGoal.amount_saved >= aGoal.amount_to_save && aGoal.type_of_savings.toLowerCase() === "fixed" && ifGoalElapsed;
-      
+
       if(ifThis) {
           // Cron must complete goal on fixed savings
           throw new ApiError(
@@ -88,7 +87,7 @@ const liquidate = async (req, res, next) => {
         withdraw(aGoal.user_id, aGoal.id, aGoal.goal_title,aGoal.amount_to_save,aGoal.amount_saved)
       }
       
-      if(aGoal.type_of_savings.toLowerCase() === "flexible" && validUser.fixed_savings > 0) { // we don't want to check an empty account
+      if(aGoal.type_of_savings.toLowerCase() === "flexible" && validUser.flexible_savings > 0) { // we don't want to check an empty account
         // When we withdraw, kovest wants to keep track of current balance on the dashboard.
         UserModel.update({flexible_savings:  parseInt(validUser.flexible_savings - aGoal.amount_saved)}, {where: {user_id: aGoal.user_id}}).then(() => {})
         withdraw(aGoal.user_id, aGoal.id, aGoal.goal_title,aGoal.amount_to_save,aGoal.amount_saved)
